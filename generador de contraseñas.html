@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Generador de Contraseñas Seguras</title>
+    <!-- CDN de Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CDN de FontAwesome para iconos -->
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <!-- CDN de Animate.css para animaciones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body class="bg-gray-900 text-white font-sans flex justify-center items-center h-screen">
+
+    <div class="w-full max-w-lg p-6 rounded-lg shadow-lg bg-gray-800 animate__animated animate__fadeIn">
+        <h2 class="text-3xl font-bold mb-4 text-center">Generador de Contraseñas Seguras</h2>
+
+        <!-- Opciones de personalización -->
+        <div class="space-y-4">
+            <div>
+                <label for="length" class="block text-lg">Longitud de la contraseña:</label>
+                <input type="number" id="length" value="16" min="8" max="64" class="w-full p-2 mt-2 bg-gray-700 border rounded-lg" />
+            </div>
+
+            <div>
+                <label for="includeNumbers" class="block text-lg">Incluir números:</label>
+                <input type="checkbox" id="includeNumbers" checked class="mr-2" />
+            </div>
+
+            <div>
+                <label for="includeUppercase" class="block text-lg">Incluir mayúsculas:</label>
+                <input type="checkbox" id="includeUppercase" checked class="mr-2" />
+            </div>
+
+            <div>
+                <label for="includeSpecial" class="block text-lg">Incluir caracteres especiales:</label>
+                <input type="checkbox" id="includeSpecial" checked class="mr-2" />
+            </div>
+
+            <div>
+                <label for="useWords" class="block text-lg">Incluir palabras aleatorias:</label>
+                <input type="checkbox" id="useWords" class="mr-2" />
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button id="generateBtn" class="w-full py-2 px-4 bg-indigo-600 rounded-lg text-lg font-semibold hover:bg-indigo-700">Generar Contraseña</button>
+        </div>
+
+        <div class="mt-4">
+            <input type="text" id="generatedPassword" readonly class="w-full p-2 bg-gray-700 border rounded-lg text-xl text-center cursor-not-allowed" />
+        </div>
+
+        <div class="mt-4 flex items-center justify-between">
+            <button id="copyBtn" class="w-1/2 py-2 bg-green-500 rounded-lg hover:bg-green-600">
+                <i class="fas fa-copy"></i> Copiar
+            </button>
+            <button id="showHideBtn" class="w-1/2 py-2 bg-blue-500 rounded-lg hover:bg-blue-600">
+                <i class="fas fa-eye"></i> Mostrar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const dictionaryWords = ['gato', 'perro', 'computadora', 'seguridad', 'web', 'contraseña', 'tecnología', 'internet'];
+
+        // Función para generar contraseñas
+        function generatePassword() {
+            const length = parseInt(document.getElementById('length').value) || 16;
+            const includeNumbers = document.getElementById('includeNumbers').checked;
+            const includeUppercase = document.getElementById('includeUppercase').checked;
+            const includeSpecial = document.getElementById('includeSpecial').checked;
+            const useWords = document.getElementById('useWords').checked;
+
+            const numbers = '0123456789';
+            const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+            const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const specialCharacters = '!@#$%^&*()-_=+[{]}\\|;:\'",<.>/?';
+
+            let characterPool = lowercaseLetters;
+
+            if (includeNumbers) characterPool += numbers;
+            if (includeUppercase) characterPool += uppercaseLetters;
+            if (includeSpecial) characterPool += specialCharacters;
+            if (useWords) characterPool += dictionaryWords.join('');
+
+            // Usamos Web Crypto API para generar contraseñas seguras
+            let password = '';
+            const crypto = window.crypto || window.msCrypto;
+            const array = new Uint32Array(length);
+            crypto.getRandomValues(array);
+
+            for (let i = 0; i < length; i++) {
+                password += characterPool[array[i] % characterPool.length];
+            }
+
+            return password;
+        }
+
+        // Mostrar/ocultar la contraseña generada
+        let passwordVisible = false;
+        document.getElementById('showHideBtn').addEventListener('click', () => {
+            passwordVisible = !passwordVisible;
+            const passwordField = document.getElementById('generatedPassword');
+            passwordField.type = passwordVisible ? 'text' : 'password';
+            document.getElementById('showHideBtn').innerHTML = passwordVisible
+                ? '<i class="fas fa-eye-slash"></i> Ocultar'
+                : '<i class="fas fa-eye"></i> Mostrar';
+        });
+
+        // Función para copiar la contraseña
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const passwordField = document.getElementById('generatedPassword');
+            passwordField.select();
+            document.execCommand('copy');
+        });
+
+        // Generar nueva contraseña
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            const password = generatePassword();
+            document.getElementById('generatedPassword').value = password;
+        });
+    </script>
+</body>
+</html>
